@@ -6,7 +6,7 @@ with Interfaces; use Interfaces;
 package PNG is
 
    --  PNG file format signature.
-   Signature : constant Unsigned_64 := 16#89504E470D0A1A0A#;
+   Signature : constant Unsigned_64 := 16#0A1A0A0D474E5089#;
 
    --== Chunk Base Defintions ==--
 
@@ -87,6 +87,7 @@ package PNG is
       Chunks : PNG_Chunk_Sets.Set;
    end record;
 
+   --  Reads an image from a PNG file. This will not close the provided stream after finishing.
    function  Read  (S : Stream_Access) return PNG_File;
    procedure Write (S : Stream_Access; F : PNG_File);
 end PNG;
