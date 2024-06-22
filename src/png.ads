@@ -2,11 +2,12 @@ with Ada.Containers; use Ada.Containers;
 with Ada.Containers.Indefinite_Hashed_Sets;
 with Ada.Streams.Stream_IO; use Ada.Streams.Stream_IO;
 with Interfaces; use Interfaces;
+with ByteFlip;
 
 package PNG is
 
    --  PNG file format signature.
-   Signature : constant Unsigned_64 := 16#0A1A0A0D474E5089#;
+   Signature : constant Unsigned_64 := 16#89504E470D0A1A0A#;
 
    --== Chunk Base Defintions ==--
 
@@ -50,7 +51,7 @@ package PNG is
    --== Critical Chunk Definitions ==--
 
    --  IHDR chunk-specific data.
-   type IHDR_Chunk_Data_Info is new PNG_Chunk_Data_Info (56) with record
+   type IHDR_Chunk_Data_Info is new PNG_Chunk_Data_Info (13) with record
       Width             : Positive;
       --  Width of the image.
       Height            : Positive;
@@ -80,6 +81,14 @@ package PNG is
    is new PNG_Chunk_Data_Info (DataLength) with record
       Palette : PLTE_Palette_Data (1 .. PaletteLength);
    end record;
+
+   --== File Reading ==--
+
+   package Unsigned_32_ByteFlipper is new
+     ByteFlip (Modular_Type => Unsigned_32);
+
+   package Unsigned_64_ByteFlipper is new
+     ByteFlip (Modular_Type => Unsigned_64);
 
    --== PNG File Defintion ==--
 
