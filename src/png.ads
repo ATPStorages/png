@@ -3,6 +3,7 @@ with Ada.Containers.Indefinite_Hashed_Sets;
 with Ada.Streams.Stream_IO; use Ada.Streams.Stream_IO;
 with Interfaces; use Interfaces;
 with ByteFlip;
+with System; use System;
 
 package PNG is
 
@@ -20,22 +21,22 @@ package PNG is
       SafeToCopy    : Boolean;
    end record;
 
-   type PNG_Chunk_Data is
+   type PNG_Chunk_Data_Array is
      array (Unsigned_32 range <>)
      of Unsigned_8;
 
-   type PNG_Chunk_Data_Info
-     (DataLength : Unsigned_32)
-   is tagged record
-      Data : PNG_Chunk_Data (1 .. DataLength);
+   type PNG_Chunk_Data_Info is tagged null record;
+   type PNG_Chunk_Data_Info_Access is access all PNG_Chunk_Data_Info'Class;
+
+   type PNG_Chunk_Data (ChunkSize : Unsigned_32) is record
+      Raw  : PNG_Chunk_Data_Array (1 .. ChunkSize);
+      Info : PNG_Chunk_Data_Info_Access;
    end record;
 
-   type PNG_Chunk
-     (DataLength : Unsigned_32)
-   is record
+   type PNG_Chunk (ChunkSize : Unsigned_32) is record
       ChunkType     : PNG_Chunk_Type;
       ChunkTypeInfo : PNG_Chunk_Type_Info;
-      Data          : PNG_Chunk_Data_Info (DataLength);
+      Data          : PNG_Chunk_Data (ChunkSize);
       CRC32         : Unsigned_32;
    end record;
 
@@ -51,10 +52,10 @@ package PNG is
    --== Critical Chunk Definitions ==--
 
    --  IHDR chunk-specific data.
-   type IHDR_Chunk_Data_Info is new PNG_Chunk_Data_Info (13) with record
-      Width             : Positive;
+   type IHDR_Chunk_Data_Info is new PNG_Chunk_Data_Info with record
+      Width             : Unsigned_32 range 1 .. Unsigned_32'Last;
       --  Width of the image.
-      Height            : Positive;
+      Height            : Unsigned_32 range 1 .. Unsigned_32'Last;
       --  Height of the image.
       BitDepth          : Unsigned_8;
       --  Bit depth of the pixels within this image.
@@ -63,6 +64,8 @@ package PNG is
       FilterMethod      : Unsigned_8 range 0 .. 0;
       InterlaceMethod   : Unsigned_8 range 0 .. 1;
    end record;
+
+   type IHDR_Chunk_Data_Info_Access is access all IHDR_Chunk_Data_Info;
 
    subtype PLTE_Palette_Length is Unsigned_32 range 1 .. 256;
    type PLTE_Palette_Color_Data is array (1 .. 3) of Unsigned_8;
@@ -75,12 +78,12 @@ package PNG is
      with Dynamic_Predicate => PLTE_Palette_Data_Length mod 3 = 0;
 
    --  PLTE chunk-specific data.
-   type PLTE_Chunk_Data_Info
-     (DataLength : PLTE_Palette_Data_Length;
-      PaletteLength : PLTE_Palette_Length)
-   is new PNG_Chunk_Data_Info (DataLength) with record
-      Palette : PLTE_Palette_Data (1 .. PaletteLength);
-   end record;
+   --  type PLTE_Chunk_Data_Info
+   --    (DataLength : PLTE_Palette_Data_Length;
+   --     PaletteLength : PLTE_Palette_Length)
+   --  is new PNG_Chunk_Data_Info (DataLength) with record
+   --     Palette : PLTE_Palette_Data (1 .. PaletteLength);
+   --  end record;
 
    --== File Reading ==--
 
@@ -97,6 +100,6 @@ package PNG is
    end record;
 
    --  Reads an image from a PNG file. This will not close the provided stream after finishing.
-   function  Read  (S : Stream_Access) return PNG_File;
-   procedure Write (S : Stream_Access; F : PNG_File);
+   function  Read  (F : File_Type; S : Stream_Access) return PNG_File;
+   procedure Write (F : PNG_File;  S : Stream_Access);
 end PNG;
