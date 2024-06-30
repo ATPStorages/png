@@ -6,8 +6,8 @@ package body IHDR is
 
    overriding procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : PNG.Chunk; V : PNG.Chunk_Vectors.Vector) is
    begin
-      if C.ChunkLength /= 13 then
-         raise PNG.BAD_CHUNK_SIZE_ERROR with "IHDR size of (" & C.ChunkLength'Image & " ) bytes incorrect, should be 13";
+      if C.Length /= 13 then
+         raise PNG.BAD_CHUNK_SIZE_ERROR with "IHDR size of (" & C.Length'Image & " ) bytes incorrect, should be 13";
       elsif V.Length > 0 then
          raise PNG.DUPLICATE_CHUNK_ERROR with "A valid PNG stream must contain only 1 IHDR chunk";
       end if;

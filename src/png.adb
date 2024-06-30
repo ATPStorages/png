@@ -30,8 +30,8 @@ package body PNG is
    procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : Chunk; V : Chunk_Vectors.Vector) is
    begin
       Ada.Text_IO.Put_Line ("Decode, unknown");
-      Ada.Text_IO.Put_Line ("      - Type:" & C.ChunkType'Image);
-      Ada.Text_IO.Put_Line ("      - Size:" & C.ChunkLength'Image);
+      Ada.Text_IO.Put_Line ("      - Type:" & C.TypeInfo.Raw'Image);
+      Ada.Text_IO.Put_Line ("      - Size:" & C.Length'Image);
    end Decode;
 
    function Read (F : File_Type; S : Stream_Access) return File
@@ -60,20 +60,18 @@ package body PNG is
          Unsigned_31_ByteFlipper.FlipBytesBE (Chnk_Length);
 
          declare
-            Index_Before_Array_Read : Positive_Count;
             Computed_CRC32          : Unsigned_32;
             Constructed_Chunk       : Chunk (Chnk_Length);
          begin
-            Chunk_Type'Read (S, Constructed_Chunk.ChunkType);
-            Unsigned_32_ByteFlipper.FlipBytesBE (Constructed_Chunk.ChunkType);
+            Chunk_Type'Read (S, Constructed_Chunk.TypeInfo.Raw);
+            Unsigned_32_ByteFlipper.FlipBytesBE (Constructed_Chunk.TypeInfo.Raw);
 
-            Constructed_Chunk.ChunkTypeInfo := (Raw => Constructed_Chunk.ChunkType,
-                                                Ancillary => CheckBit5(Unsigned_8 (Shift_Right (Constructed_Chunk.ChunkType, 24) rem 2 ** 8)),
-                                                Specification => CheckBit5(Unsigned_8 (Shift_Right (Constructed_Chunk.ChunkType, 16) rem 2 ** 8)),
-                                                Reserved => CheckBit5(Unsigned_8 (Shift_Right (Constructed_Chunk.ChunkType, 8) mod 2 ** 8)),
-                                                SafeToCopy => CheckBit5(Unsigned_8 (Constructed_Chunk.ChunkType rem 2 ** 8)));
+            Constructed_Chunk.TypeInfo.Ancillary     := CheckBit5(Unsigned_8 (Shift_Right (Constructed_Chunk.TypeInfo.Raw, 24) rem 2 ** 8));
+            Constructed_Chunk.TypeInfo.Specification := CheckBit5(Unsigned_8 (Shift_Right (Constructed_Chunk.TypeInfo.Raw, 16) rem 2 ** 8));
+            Constructed_Chunk.TypeInfo.Reserved      := CheckBit5(Unsigned_8 (Shift_Right (Constructed_Chunk.TypeInfo.Raw, 8 ) rem 2 ** 8));
+            Constructed_Chunk.TypeInfo.SafeToCopy    := CheckBit5(Unsigned_8              (Constructed_Chunk.TypeInfo.Raw      rem 2 ** 8));
 
-            case Constructed_Chunk.ChunkType is
+            case Constructed_Chunk.TypeInfo.Raw is
                when 16#49484452# =>
                   Constructed_Chunk.Data.Info := new IHDR.Chunk_Data_Info;
                when 16#504C5445# =>
@@ -90,17 +88,13 @@ package body PNG is
                when others =>
                   if Constructed_Chunks.Length = 0 then
                      raise BAD_STRUCTURE_ERROR with "A valid PNG stream must contain the IHDR chunk first"; end if;
-                  if Constructed_Chunk.ChunkType = 16#49454E44# then
+                  if Constructed_Chunk.TypeInfo.Raw = 16#49454E44# then
                      Stream_Ended := True; end if;
 
                   Constructed_Chunk.Data.Info := new Chunk_Data_Info;
             end case;
 
-            Index_Before_Array_Read := Index (F);
             Decode (Constructed_Chunk.Data.Info.all, S, Constructed_Chunk, Constructed_Chunks);
-
-            Set_Index (F, Index_Before_Array_Read);
-            Chunk_Data_Array'Read (S, Constructed_Chunk.Data.Raw);
 
             Unsigned_32'Read (S, Constructed_Chunk.CRC32);
             Unsigned_32_ByteFlipper.FlipBytesBE (Constructed_Chunk.CRC32);
