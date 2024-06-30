@@ -2,6 +2,9 @@ with Ada.Text_IO;
 with System; use System;
 with IHDR;
 with PLTE;
+with pHYs;
+with acTL;
+with fcTL;
 
 package body PNG is
    function Chunk_Hash (C : Chunk) return Hash_Type
@@ -28,7 +31,7 @@ package body PNG is
    begin
       Ada.Text_IO.Put_Line ("Decode, unknown");
       Ada.Text_IO.Put_Line ("      - Type:" & C.ChunkType'Image);
-      Ada.Text_IO.Put_Line ("      - Size:" & C.ChunkSize'Image);
+      Ada.Text_IO.Put_Line ("      - Size:" & C.ChunkLength'Image);
    end Decode;
 
    function Read (F : File_Type; S : Stream_Access) return File
@@ -36,7 +39,7 @@ package body PNG is
       Stream_Signature : Unsigned_64;
       Stream_Ended     : Boolean := False;
 
-      Chnk_Size      : Unsigned_32;
+      Chnk_Length : Unsigned_31;
 
       Constructed_Chunks   : Chunk_Vectors.Vector;
       Constructed_PNG_File : constant File :=
@@ -53,13 +56,13 @@ package body PNG is
             end if;
          end if;
 
-         Unsigned_32'Read (S, Chnk_Size);
-         Unsigned_32_ByteFlipper.FlipBytesBE (Chnk_Size);
+         Unsigned_31'Read (S, Chnk_Length);
+         Unsigned_31_ByteFlipper.FlipBytesBE (Chnk_Length);
 
          declare
             Index_Before_Array_Read : Positive_Count;
             Computed_CRC32          : Unsigned_32;
-            Constructed_Chunk       : Chunk (Chnk_Size);
+            Constructed_Chunk       : Chunk (Chnk_Length);
          begin
             Chunk_Type'Read (S, Constructed_Chunk.ChunkType);
             Unsigned_32_ByteFlipper.FlipBytesBE (Constructed_Chunk.ChunkType);
@@ -74,7 +77,16 @@ package body PNG is
                when 16#49484452# =>
                   Constructed_Chunk.Data.Info := new IHDR.Chunk_Data_Info;
                when 16#504C5445# =>
-                  Constructed_Chunk.Data.Info := new PLTE.Chunk_Data_Info (Chnk_Size, Chnk_Size / 3);
+                  Constructed_Chunk.Data.Info := new PLTE.Chunk_Data_Info (Chnk_Length, Chnk_Length / 3);
+
+               when 16#70485973# =>
+                  Constructed_Chunk.Data.Info := new pHYs.Chunk_Data_Info;
+
+               when 16#6163544C# => --  APNG related chunks
+                  Constructed_Chunk.Data.Info := new acTL.Chunk_Data_Info;
+               when 16#6663544C# =>
+                  Constructed_Chunk.Data.Info := new fcTL.Chunk_Data_Info;
+
                when others =>
                   if Constructed_Chunks.Length = 0 then
                      raise BAD_STRUCTURE_ERROR with "A valid PNG stream must contain the IHDR chunk first"; end if;

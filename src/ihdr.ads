@@ -3,12 +3,11 @@ with Interfaces; use Interfaces;
 with PNG;
 
 package IHDR is
-
-   --  IHDR chunk-specific data.
+   
    type Chunk_Data_Info is new PNG.Chunk_Data_Info with record
-      Width             : Unsigned_32 range 1 .. Unsigned_32'Last;
+      Width             : PNG.Unsigned_31_Positive;
       --  Width of the image.
-      Height            : Unsigned_32 range 1 .. Unsigned_32'Last;
+      Height            : PNG.Unsigned_31_Positive;
       --  Height of the image.
       BitDepth          : Unsigned_8;
       --  Bit depth of the pixels within this image.

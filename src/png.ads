@@ -21,22 +21,26 @@ package PNG is
       SafeToCopy    : Boolean;
    end record;
 
+   type Unsigned_31 is mod 2 ** 31
+     with Size => 32;
+   subtype Unsigned_31_Positive is PNG.Unsigned_31 range 1 .. PNG.Unsigned_31'Last;
+
    type Chunk_Data_Array is
-     array (Unsigned_32 range <>)
+     array (Unsigned_31 range <>)
      of Unsigned_8;
 
    type Chunk_Data_Info is tagged null record;
    type Chunk_Data_Info_Access is access all Chunk_Data_Info'Class;
 
-   type Chunk_Data (ChunkSize : Unsigned_32) is record
-      Raw  : Chunk_Data_Array (1 .. ChunkSize);
+   type Chunk_Data (ChunkLength : Unsigned_31) is record
+      Raw  : Chunk_Data_Array (1 .. ChunkLength);
       Info : Chunk_Data_Info_Access;
    end record;
 
-   type Chunk (ChunkSize : Unsigned_32) is record
+   type Chunk (ChunkLength : Unsigned_31) is record
       ChunkType     : Chunk_Type;
       ChunkTypeInfo : Chunk_Type_Info;
-      Data          : Chunk_Data (ChunkSize);
+      Data          : Chunk_Data (ChunkLength);
       CRC32         : Unsigned_32;
    end record;
 
@@ -67,6 +71,12 @@ package PNG is
 
    --  There's an unrecognized non-ancillary chunk which cannot be skipped over
    UNRECOGNIZED_CRITICAL_CHUNK_ERROR : exception;
+
+   package Unsigned_16_ByteFlipper is new
+     ByteFlip (Modular_Type => Unsigned_16);
+
+   package Unsigned_31_ByteFlipper is new
+     ByteFlip (Modular_Type => Unsigned_31);
 
    package Unsigned_32_ByteFlipper is new
      ByteFlip (Modular_Type => Unsigned_32);
