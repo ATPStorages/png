@@ -6,6 +6,7 @@ with pHYs;
 with tEXt;
 with acTL;
 with fcTL;
+with fdAT;
 
 package body PNG is
    function Chunk_Hash (C : Chunk) return Hash_Type
@@ -27,8 +28,6 @@ package body PNG is
    begin
       return (N and (2 ** 5)) > 0;
    end CheckBit5;
-
-   type Chunk_Data_Array is array (Unsigned_31 range <>) of Unsigned_8;
 
    procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : Chunk; V : Chunk_Vectors.Vector) is
       discard : Chunk_Data_Array (1 .. C.Length);
@@ -91,10 +90,14 @@ package body PNG is
                   Constructed_Chunk.Data.Info := new acTL.Chunk_Data_Info;
                when 16#6663544C# =>
                   Constructed_Chunk.Data.Info := new fcTL.Chunk_Data_Info;
+               when 16#66644154# =>
+                  Constructed_Chunk.Data.Info := new fdAT.Chunk_Data_Info (Chnk_Length - (Unsigned_31'Size / 8));
 
                when others =>
                   if Constructed_Chunks.Length = 0 then
                      raise BAD_STRUCTURE_ERROR with "A valid PNG stream must contain the IHDR chunk first"; end if;
+                  if not Constructed_Chunk.TypeInfo.Ancillary then
+                     raise UNRECOGNIZED_CRITICAL_CHUNK_ERROR; end if;
                   if Constructed_Chunk.TypeInfo.Raw = 16#49454E44# then
                      Stream_Ended := True; end if;
 

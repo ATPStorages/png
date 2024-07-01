@@ -25,6 +25,8 @@ package PNG is
      with Size => 32;
    subtype Unsigned_31_Positive is PNG.Unsigned_31 range 1 .. PNG.Unsigned_31'Last;
 
+   type Chunk_Data_Array is array (Unsigned_31 range <>) of Unsigned_8;
+
    type Chunk_Data_Info is tagged null record;
    type Chunk_Data_Info_Access is access all Chunk_Data_Info'Class;
 
