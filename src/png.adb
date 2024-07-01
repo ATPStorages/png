@@ -2,6 +2,7 @@ with Ada.Text_IO;
 with System; use System;
 with IHDR;
 with PLTE;
+with IDAT;
 with pHYs;
 with tEXt;
 with acTL;
@@ -80,6 +81,8 @@ package body PNG is
                   Constructed_Chunk.Data.Info := new IHDR.Chunk_Data_Info;
                when 16#504C5445# =>
                   Constructed_Chunk.Data.Info := new PLTE.Chunk_Data_Info (Chnk_Length, Chnk_Length / 3);
+               when 16#49444154# =>
+                  Constructed_Chunk.Data.Info := new IDAT.Chunk_Data_Info (Chnk_Length);
 
                when 16#70485973# =>
                   Constructed_Chunk.Data.Info := new pHYs.Chunk_Data_Info;
