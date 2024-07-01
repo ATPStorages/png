@@ -85,8 +85,8 @@ package body PNG is
                when 16#49444154# =>
                   Constructed_Chunk.Data.Info := new IDAT.Chunk_Data_Info (Chnk_Length);
                when 16#49454E44# =>
-                  Constructed_Chunk.Data.Info := new Chunk_Data_Info;
                   Stream_Ended := True;
+                  goto NoDecode;
 
                when 16#70485973# =>
                   Constructed_Chunk.Data.Info := new pHYs.Chunk_Data_Info;
@@ -112,6 +112,7 @@ package body PNG is
             end case;
 
             Decode (Constructed_Chunk.Data.Info.all, S, Constructed_Chunk, Constructed_Chunks, F);
+            <<NoDecode>>
 
             Unsigned_32'Read (S, Constructed_Chunk.CRC32);
             Unsigned_32_ByteFlipper.FlipBytesBE (Constructed_Chunk.CRC32);
