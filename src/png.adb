@@ -83,6 +83,9 @@ package body PNG is
                   Constructed_Chunk.Data.Info := new PLTE.Chunk_Data_Info (Chnk_Length, Chnk_Length / 3);
                when 16#49444154# =>
                   Constructed_Chunk.Data.Info := new IDAT.Chunk_Data_Info (Chnk_Length);
+               when 16#49454E44# =>
+                  Constructed_Chunk.Data.Info := new Chunk_Data_Info;
+                  Stream_Ended := True;
 
                when 16#70485973# =>
                   Constructed_Chunk.Data.Info := new pHYs.Chunk_Data_Info;
@@ -101,8 +104,6 @@ package body PNG is
                      raise BAD_STRUCTURE_ERROR with "A valid PNG stream must contain the IHDR chunk first"; end if;
                   if not Constructed_Chunk.TypeInfo.Ancillary then
                      raise UNRECOGNIZED_CRITICAL_CHUNK_ERROR; end if;
-                  if Constructed_Chunk.TypeInfo.Raw = 16#49454E44# then
-                     Stream_Ended := True; end if;
 
                   Constructed_Chunk.Data.Info := new Chunk_Data_Info;
             end case;
