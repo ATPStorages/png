@@ -31,19 +31,21 @@ package body eXIf is
          
          declare
             NewImageFileDirectory : ImageFileDirectory (Unsigned16Buffer);
+            IteratedTag           : Tag;
             EnumerationValue      : Unsigned_32;
          begin
             for TagIndex in NewImageFileDirectory.Tags'Range loop
-               Tag'Read (S, NewImageFileDirectory.Tags (TagIndex));
-               PNG.Unsigned_16_ByteFlipper.FlipBytesCHK (NewImageFileDirectory.Tags (TagIndex).ID, ForBigEndian);
-               Ada.Text_IO.Put_Line ("      eXIf Tag ID : " & NewImageFileDirectory.Tags (TagIndex).ID'Image);
+               IteratedTag := NewImageFileDirectory.Tags (TagIndex);
+               Tag'Read (S, IteratedTag);
+               PNG.Unsigned_16_ByteFlipper.FlipBytesCHK (IteratedTag.ID, ForBigEndian);
+               Ada.Text_IO.Put_Line ("      eXIf Tag ID : " & IteratedTag.ID'Image);
                
                --  EnumerationValue := NewImageFileDirectory.Tags (TagIndex).DataType'Enum_Rep;
                --  PNG.Unsigned_32_ByteFlipper.FlipBytesCHK (EnumerationValue, ForBigEndian);
                --  NewImageFileDirectory.Tags (TagIndex).DataType := TagDataTypes'Val (EnumerationValue);
                
-               PNG.Unsigned_32_ByteFlipper.FlipBytesCHK (NewImageFileDirectory.Tags (TagIndex).ValueCount, ForBigEndian);
-               PNG.Unsigned_32_ByteFlipper.FlipBytesCHK (NewImageFileDirectory.Tags (TagIndex).ValueOrPointer, ForBigEndian);
+               PNG.Unsigned_32_ByteFlipper.FlipBytesCHK (IteratedTag.ValueCount, ForBigEndian);
+               PNG.Unsigned_32_ByteFlipper.FlipBytesCHK (IteratedTag.ValueOrPointer, ForBigEndian);
             end loop;
             Self.ImageFileDirectories.Append (NewImageFileDirectory);
          end;
