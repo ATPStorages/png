@@ -3,6 +3,7 @@ with System; use System;
 with IHDR;
 with PLTE;
 with pHYs;
+with tEXt;
 with acTL;
 with fcTL;
 
@@ -27,11 +28,15 @@ package body PNG is
       return (N and (2 ** 5)) > 0;
    end CheckBit5;
 
+   type Chunk_Data_Array is array (Unsigned_31 range <>) of Unsigned_8;
+
    procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : Chunk; V : Chunk_Vectors.Vector) is
+      discard : Chunk_Data_Array (1 .. C.Length);
    begin
       Ada.Text_IO.Put_Line ("Decode, unknown");
       Ada.Text_IO.Put_Line ("      - Type:" & C.TypeInfo.Raw'Image);
       Ada.Text_IO.Put_Line ("      - Size:" & C.Length'Image);
+      Chunk_Data_Array'Read (S, discard);
    end Decode;
 
    function Read (F : File_Type; S : Stream_Access) return File
@@ -79,6 +84,8 @@ package body PNG is
 
                when 16#70485973# =>
                   Constructed_Chunk.Data.Info := new pHYs.Chunk_Data_Info;
+               when 16#74455874# =>
+                  Constructed_Chunk.Data.Info := new tEXt.Chunk_Data_Info;
 
                when 16#6163544C# => --  APNG related chunks
                   Constructed_Chunk.Data.Info := new acTL.Chunk_Data_Info;
