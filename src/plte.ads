@@ -21,6 +21,6 @@ package PLTE is
       Palette : Palette_Data (1 .. PaletteLength);
    end record;
    
-   overriding procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : PNG.Chunk; V : PNG.Chunk_Vectors.Vector);
+   overriding procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : PNG.Chunk; V : PNG.Chunk_Vectors.Vector; F : Ada.Streams.Stream_IO.File_Type);
 
 end PLTE;

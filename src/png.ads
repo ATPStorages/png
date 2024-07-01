@@ -47,7 +47,11 @@ package PNG is
        (Index_Type => Natural,
         Element_Type => Chunk);
 
-   procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : Chunk; V : Chunk_Vectors.Vector);
+   procedure Decode (Self : in out Chunk_Data_Info;
+                     S : Stream_Access;
+                     C : Chunk;
+                     V : Chunk_Vectors.Vector;
+                     F : File_Type);
 
    --== File Reading ==--
 

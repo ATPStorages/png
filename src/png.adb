@@ -5,6 +5,7 @@ with PLTE;
 with IDAT;
 with pHYs;
 with tEXt;
+with eXIf;
 with acTL;
 with fcTL;
 with fdAT;
@@ -30,7 +31,7 @@ package body PNG is
       return (N and (2 ** 5)) > 0;
    end CheckBit5;
 
-   procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : Chunk; V : Chunk_Vectors.Vector) is
+   procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : Chunk; V : Chunk_Vectors.Vector; F : File_Type) is
       discard : Chunk_Data_Array (1 .. C.Length);
    begin
       Ada.Text_IO.Put_Line ("Decode, unknown");
@@ -91,6 +92,8 @@ package body PNG is
                   Constructed_Chunk.Data.Info := new pHYs.Chunk_Data_Info;
                when 16#74455874# =>
                   Constructed_Chunk.Data.Info := new tEXt.Chunk_Data_Info;
+               when 16#65584966# =>
+                  Constructed_Chunk.Data.Info := new eXIf.Chunk_Data_Info;
 
                when 16#6163544C# => --  APNG related chunks
                   Constructed_Chunk.Data.Info := new acTL.Chunk_Data_Info;
@@ -108,7 +111,7 @@ package body PNG is
                   Constructed_Chunk.Data.Info := new Chunk_Data_Info;
             end case;
 
-            Decode (Constructed_Chunk.Data.Info.all, S, Constructed_Chunk, Constructed_Chunks);
+            Decode (Constructed_Chunk.Data.Info.all, S, Constructed_Chunk, Constructed_Chunks, F);
 
             Unsigned_32'Read (S, Constructed_Chunk.CRC32);
             Unsigned_32_ByteFlipper.FlipBytesBE (Constructed_Chunk.CRC32);

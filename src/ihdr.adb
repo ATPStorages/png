@@ -4,7 +4,7 @@ with PNG; use PNG;
 
 package body IHDR is
 
-   overriding procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : PNG.Chunk; V : PNG.Chunk_Vectors.Vector) is
+   overriding procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : PNG.Chunk; V : PNG.Chunk_Vectors.Vector; F : Ada.Streams.Stream_IO.File_Type) is
    begin
       if C.Length /= 13 then
          raise PNG.BAD_CHUNK_SIZE_ERROR with "IHDR size of (" & C.Length'Image & " ) bytes incorrect, should be 13";

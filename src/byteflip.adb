@@ -40,4 +40,10 @@ package body ByteFlip is
       end if;
    end FlipBytesLE;
 
+   procedure FlipBytesCHK (M : in out Modular_Type; ForBigEndian : Boolean) is
+   begin
+      if ForBigEndian then FlipBytesBE (M);
+      else FlipBytesLE (M);
+      end if;
+   end FlipBytesCHK;
 end ByteFlip;

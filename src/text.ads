@@ -10,6 +10,6 @@ package tEXt is
       Text    : Unbounded_String;
    end record;
    
-   overriding procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : PNG.Chunk; V : PNG.Chunk_Vectors.Vector);
+   overriding procedure Decode (Self : in out Chunk_Data_Info; S : Stream_Access; C : PNG.Chunk; V : PNG.Chunk_Vectors.Vector; F : File_Type);
 
 end tEXt;
